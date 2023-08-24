@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.26.1 (HEAD)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: pigallery2
+  name: pigallery2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: pigallery2
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.26.1 (HEAD)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: pigallery2
+    spec:
+      containers:
+        - env:
+            - name: NODE_ENV
+              value: production
+          image: bpatrik/pigallery2:latest
+          name: pigallery2
+          ports:
+            - containerPort: 80
+          resources: {}
+          volumeMounts:
+            - mountPath: /app/data/config
+              name: pigallery2-config
+            - mountPath: /app/data/db
+              name: pigallery2-db-data
+            - mountPath: /app/data/images
+              name: pigallery2-images
+              readOnly: true
+            - mountPath: /app/data/tmp
+              name: pigallery2-tmp
+      restartPolicy: Always
+      volumes:
+        - name: pigallery2-config
+          hostPath:
+            path: "/mnt/pigallery2-config"
+        - name: pigallery2-db-data
+          hostPath:
+            path: "/mnt/pigallery2-db-data"
+        - name: pigallery2-tmp
+          hostPath:
+            path: "/mnt/pigallery2-tmp"
+        - name: pigallery2-images
+          persistentVolumeClaim:
+            claimName: pigallery2-images
+            readOnly: true
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: pigallery2
+  name: pigallery2
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      nodePort: 30000
+  selector:
+    io.kompose.service: pigallery2
