@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pihole
+  labels:
+    app: pihole
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pihole
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: pihole
+    spec:
+      containers:
+        - env:
+          - name: TZ
+            value: 'America/New_York'
+          - name: PIHOLE_DNS_
+            value: "10.0.0.1"
+          - name: WEBPASSWORD
+            value: ""
+          - name: DNSMASQ_LISTENING
+            value: "all"
+          - name: FTLCONF_LOCAL_IPV4
+            value: "127.0.0.1"
+          image: pihole/pihole:latest
+          name: pihole
+          resources:
+            requests:
+              memory: "512Mi"
+          volumeMounts:
+            - mountPath: /etc/pihole
+              name: pihole-etc
+            - mountPath: /etc/dnsmasq.d
+              name: pihole-dnsmasq-d
+      restartPolicy: Always
+      volumes:
+        - name: pihole-etc
+          hostPath:
+            path: "/mnt/pihole-etc"
+        - name: pihole-dnsmasq-d
+          hostPath:
+            path: "/mnt/pihole-dnsmasq-d"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole
+spec:
+  type: NodePort
+  ports:
+    - name: dns-tcp
+      port: 53
+      nodePort: 30001
+    - name: dns-udp
+      protocol: UDP
+      port: 53
+      nodePort: 30001
+  selector:
+    app: pihole
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pihole-ui
+spec:
+  type: NodePort
+  ports:
+    - name: pihole-ui
+      port: 80
+      nodePort: 30002
+  selector:
+    app: pihole
