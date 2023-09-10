@@ -28,7 +28,7 @@ spec:
             value: "all"
           - name: FTLCONF_LOCAL_IPV4
             value: "127.0.0.1"
-          image: pihole/pihole:latest
+          image: pihole/pihole:2023.05.2
           name: pihole
           resources:
             requests:
@@ -61,6 +61,7 @@ spec:
       protocol: UDP
       port: 53
       nodePort: 30001
+  externalTrafficPolicy: "Local"
   selector:
     app: pihole
 ---

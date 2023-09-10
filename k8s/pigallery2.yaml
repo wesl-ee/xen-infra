@@ -28,7 +28,7 @@ spec:
         - env:
             - name: NODE_ENV
               value: production
-          image: bpatrik/pigallery2:latest
+          image: bpatrik/pigallery2:1.9.5
           name: pigallery2
           ports:
             - containerPort: 80
