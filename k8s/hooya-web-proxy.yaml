@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-proxy
+  labels:
+    app: hooya-web-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-proxy
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha
+          name: hooya-web-proxy
+          command: ["/hooya-web-proxy", "--endpoint=10.0.10.6:30004"]
+          resources:
+            requests:
+              memory: "128Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-proxy
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8532
+      nodePort: 30005
+  externalTrafficPolicy: "Local"
+  selector:
+    app: hooya-web-proxy

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooyad
+  labels:
+    app: hooyad
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooyad
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooyad
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha
+          name: hooyad
+          command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
+          resources:
+            requests:
+              memory: "2Gi"
+          volumeMounts:
+            - mountPath: /mnt
+              name: hooyad-mnt
+              readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: hooyad-mnt
+          persistentVolumeClaim:
+            claimName: hooyad-mnt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooyad
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8531
+      nodePort: 30004
+  externalTrafficPolicy: "Local"
+  selector:
+    app: hooyad
