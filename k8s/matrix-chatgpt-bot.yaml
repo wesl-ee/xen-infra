@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: matrix-chatgpt-bot
+  labels:
+    app: matrix-chatgpt-bot
+spec:
+  selector:
+    matchLabels:
+      app: matrix-chatgpt-bot
+  template:
+    metadata:
+      labels:
+        app: matrix-chatgpt-bot
+    spec:
+      containers:
+        - image: ghcr.io/matrixgpt/matrix-chatgpt-bot:latest
+          name: matrix-chatgpt-bot
+          env:
+          - name: OPENAI_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: openai-api
+                key: key
+          - name: MATRIX_ACCESS_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: openai-api
+                key: matrix-access-token
+          - name: MATRIX_BOT_USERNAME
+            value: matrix-chatgpt-bot
+          - name: CHATGPT_API_MODEL
+            value: gpt-3.5-turbo
+          - name: CHATGPT_PROMPT_PREFIX
+            value: "You are a helpful assistant."
+          - name: MATRIX_HOMESERVER_URL
+            value: https://chat.wesl.ee
+          - name: MATRIX_ENCRYPTION
+            value: "false"
+          - name: MATRIX_THREADS
+            value: "true"
+          - name: CHATGPT_CONTEXT
+            value: thread
+          - name: MATRIX_WHITELIST
+            value: ":chat.wesl.ee"
+      restartPolicy: Always
