@@ -26,8 +26,6 @@ spec:
             - mountPath: /mnt
               name: raamen-demo-mnt
               readOnly: true
-            - mountPath: /app/config
-              name: raamen-demo-config
       restartPolicy: Always
       volumes:
         - name: raamen-demo-mnt
@@ -38,13 +36,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: raamen
+  name: raamen-demo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.10.130
 spec:
-  type: NodePort
-  ports:
-    - name: http
-      port: 80
-      nodePort: 30003
-  externalTrafficPolicy: "Local"
   selector:
     app: raamen-demo
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+    protocol: TCP

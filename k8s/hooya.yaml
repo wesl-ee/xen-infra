@@ -17,7 +17,7 @@ spec:
         app: hooyad
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha.2
           name: hooyad
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
           resources:
@@ -37,12 +37,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hooyad
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.10.129
 spec:
-  type: NodePort
-  ports:
-    - name: http
-      port: 8531
-      nodePort: 30004
-  externalTrafficPolicy: "Local"
   selector:
     app: hooyad
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 8531
+    targetPort: 8531
+    protocol: TCP

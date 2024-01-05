@@ -17,9 +17,9 @@ spec:
         app: hooya-web-proxy
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha.2
           name: hooya-web-proxy
-          command: ["/hooya-web-proxy", "--endpoint=10.0.10.6:30004"]
+          command: ["/hooya-web-proxy", "--endpoint=10.0.10.129:8531"]
           resources:
             requests:
               memory: "128Mi"
@@ -29,12 +29,15 @@ apiVersion: v1
 kind: Service
 metadata:
   name: hooya-web-proxy
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.10.128
 spec:
-  type: NodePort
-  ports:
-    - name: http
-      port: 8532
-      nodePort: 30005
-  externalTrafficPolicy: "Local"
   selector:
     app: hooya-web-proxy
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8532
+    protocol: TCP
