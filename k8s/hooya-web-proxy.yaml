@@ -19,7 +19,7 @@ spec:
       containers:
         - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha.2
           name: hooya-web-proxy
-          command: ["/hooya-web-proxy", "--endpoint=10.0.10.129:8531"]
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
           resources:
             requests:
               memory: "128Mi"
@@ -30,7 +30,7 @@ kind: Service
 metadata:
   name: hooya-web-proxy
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.10.128
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.128
 spec:
   selector:
     app: hooya-web-proxy

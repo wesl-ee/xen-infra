@@ -52,7 +52,7 @@ kind: Service
 metadata:
   name: pihole
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.10.132
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.132
 spec:
   selector:
     app: pihole

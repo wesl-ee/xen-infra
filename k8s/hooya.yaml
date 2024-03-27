@@ -38,7 +38,7 @@ kind: Service
 metadata:
   name: hooyad
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.10.129
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.129
 spec:
   selector:
     app: hooyad

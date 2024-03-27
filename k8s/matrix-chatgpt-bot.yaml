@@ -14,7 +14,7 @@ spec:
         app: matrix-chatgpt-bot
     spec:
       containers:
-        - image: ghcr.io/matrixgpt/matrix-chatgpt-bot:latest
+        - image: ghcr.io/matrixgpt/matrix-chatgpt-bot:3.1.5
           name: matrix-chatgpt-bot
           env:
           - name: OPENAI_API_KEY
@@ -43,4 +43,13 @@ spec:
             value: thread
           - name: MATRIX_WHITELIST
             value: ":chat.wesl.ee"
+          - name: CHATGPT_MAX_PROMPT_TOKENS
+            value: "3072"
+          volumeMounts:
+            - mountPath: /storage
+              name: matrix-chatgpt-bot-storage
       restartPolicy: Always
+      volumes:
+        - name: matrix-chatgpt-bot-storage
+          hostPath:
+            path: "/mnt/matrix-chatgpt-bot-storage"

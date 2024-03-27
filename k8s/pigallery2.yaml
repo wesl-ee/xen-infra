@@ -65,7 +65,7 @@ kind: Service
 metadata:
   name: pigallery2
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.10.131
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.131
 spec:
   selector:
     io.kompose.service: pigallery2

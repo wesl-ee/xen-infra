@@ -38,7 +38,7 @@ kind: Service
 metadata:
   name: raamen-demo
   annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.10.130
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.130
 spec:
   selector:
     app: raamen-demo
