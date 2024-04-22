@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: plex-media-server
+  labels:
+    app: plex-media-server
+spec:
+  selector:
+    matchLabels:
+      app: plex-media-server
+  template:
+    metadata:
+      labels:
+        app: plex-media-server
+    spec:
+      containers:
+        - image: plexinc/pms-docker:1.40.1.8227-c0dd5a73e
+          name: plex-media-server
+          env:
+          - name: TZ
+            value: "US/Eastern"
+          - name: ADVERTISE_IP
+            value: "https://plex.xen.wesl.ee:443/"
+          - name: CHANGE_CONFIG_DIR_OWNERSHIP
+            value: "false"
+          - name: PLEX_UID
+            value: "0"
+          - name: PLEX_GID
+            value: "0"
+          volumeMounts:
+            - mountPath: /data
+              name: world-public
+            - mountPath: /transcode
+              name: plex-transcode
+            - mountPath: /config
+              name: scsi-plex-config
+      restartPolicy: Always
+      volumes:
+        - name: world-public
+          persistentVolumeClaim:
+            claimName: world-public
+        - name: scsi-plex-config
+          persistentVolumeClaim:
+            claimName: scsi-plex-config
+        - name: plex-transcode
+          hostPath:
+            path: "/mnt/plex-transcode"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: plex-media-server
+spec:
+  selector:
+    app: plex-media-server
+  type: NodePort
+  ports:
+  - name: plex
+    port: 32400
+    nodePort: 32400

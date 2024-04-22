@@ -14,7 +14,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   mountOptions:
     - hard
-    - nfsvers=4.1
+    - nfsvers=4.2
   nfs:
     path: "/public/DCIM Gallery"
     server: 10.0.30.1
@@ -47,7 +47,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   mountOptions:
     - hard
-    - nfsvers=4.1
+    - nfsvers=4.2
   nfs:
     path: "/raamen-demo"
     server: 10.0.30.1
@@ -129,3 +129,69 @@ spec:
   resources:
     requests:
       storage: 32Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: world-public
+  labels:
+    type: local
+spec:
+  storageClassName: world-public
+  capacity:
+    storage: 10Ti
+  volumeMode: Filesystem
+  accessModes:
+    - ReadOnlyMany
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+  nfs:
+    path: "/public"
+    server: 10.0.30.1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: world-public
+spec:
+  storageClassName: world-public
+  accessModes:
+    - ReadOnlyMany
+  resources:
+    requests:
+      storage: 10Ti
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: scsi-plex-config
+spec:
+  storageClassName: scsi-plex-config
+  capacity:
+    storage: 100Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  iscsi:
+    targetPortal: 10.0.30.1:3260
+    iqn: iqn.2003-01.org.linux-iscsi.dullscythe.x8664:sn.97c0b77a4489
+    lun: 0
+    fsType: ext4
+    readOnly: false
+    chapAuthDiscovery: false
+    chapAuthSession: false
+    initiatorName: iqn.2003-01.org.linux-iscsi.dullscythe.client:kubes-plex
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: scsi-plex-config
+spec:
+  storageClassName: scsi-plex-config
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
