@@ -80,10 +80,43 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   mountOptions:
     - hard
-    - nfsvers=4.1
+    - nfsvers=4.2
   nfs:
     path: "/hooya"
     server: 10.0.30.1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: hooyad-public-demo-mnt
+  labels:
+    type: local
+spec:
+  storageClassName: hooyad-public-demo-mnt
+  capacity:
+    storage: 32Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  mountOptions:
+    - hard
+    - nfsvers=4.2
+  nfs:
+    path: "/hooya-public-demo"
+    server: 10.0.30.1
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: hooyad-public-demo-mnt
+spec:
+  storageClassName: hooyad-public-demo-mnt
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 32Gi
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim

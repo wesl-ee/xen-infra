@@ -1,0 +1,97 @@
+# hooyad
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooyad-public-demo
+  labels:
+    app: hooyad-public-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooyad-public-demo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooyad-public-demo
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha.3
+          name: hooyad-public-demo
+          command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
+          resources:
+            requests:
+              memory: "2Gi"
+          volumeMounts:
+            - mountPath: /mnt
+              name: hooyad-public-demo-mnt
+              readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: hooyad-public-demo-mnt
+          persistentVolumeClaim:
+            claimName: hooyad-public-demo-mnt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooyad-public-demo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.133
+spec:
+  selector:
+    app: hooyad-public-demo
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 8531
+    targetPort: 8531
+    protocol: TCP
+---
+# hooya-web-proxy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-proxy-public-demo
+  labels:
+    app: hooya-web-proxy-public-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-proxy-public-demo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-proxy-public-demo
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha.3
+          name: hooya-web-proxy-public-demo
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
+          resources:
+            requests:
+              memory: "128Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-proxy-public-demo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.134
+spec:
+  selector:
+    app: hooya-web-proxy-public-demo
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8532
+    protocol: TCP
