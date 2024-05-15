@@ -18,7 +18,7 @@ spec:
         app: hooyad-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha.3
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha
           name: hooyad-public-demo
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
           resources:
@@ -71,7 +71,7 @@ spec:
         app: hooya-web-proxy-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha.3
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha
           name: hooya-web-proxy-public-demo
           command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
           resources:
