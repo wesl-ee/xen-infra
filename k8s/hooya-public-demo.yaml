@@ -18,8 +18,9 @@ spec:
         app: hooyad-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha-4
           name: hooyad-public-demo
+          # imagePullPolicy: Always
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
           resources:
             requests:
@@ -71,7 +72,8 @@ spec:
         app: hooya-web-proxy-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-4
+          # imagePullPolicy: Always
           name: hooya-web-proxy-public-demo
           command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
           resources:
@@ -94,4 +96,51 @@ spec:
   - name: http
     port: 80
     targetPort: 8532
+    protocol: TCP
+---
+# hooya-web-ui
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-ui-public-demo
+  labels:
+    app: hooya-web-ui-public-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-ui-public-demo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-ui-public-demo
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0-alpha-4
+          # imagePullPolicy: Always
+          name: hooya-web-ui-public-demo
+          env:
+          - name: HOOYA_WEB_PROXY_URL
+            value: https://web.public-demo.hooya.wesl.ee
+          - name: HOOYA_WEB_PROXY_ENDPOINT
+            value: http://10.0.40.134
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-ui-public-demo
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.135
+spec:
+  selector:
+    app: hooya-web-ui-public-demo
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
     protocol: TCP
