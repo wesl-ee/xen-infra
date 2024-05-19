@@ -17,7 +17,7 @@ spec:
         app: hooya-web-proxy
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-prealpha.2
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-5
           name: hooya-web-proxy
           command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
           resources:

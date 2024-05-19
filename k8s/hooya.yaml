@@ -17,7 +17,7 @@ spec:
         app: hooyad
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0-prealpha.2
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha-5
           name: hooyad
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
           resources:

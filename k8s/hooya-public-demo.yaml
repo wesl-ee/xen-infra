@@ -18,7 +18,7 @@ spec:
         app: hooyad-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha-4
+        - image: ghcr.io/hooya-network/hooyad:v0.1.0-alpha-5
           name: hooyad-public-demo
           # imagePullPolicy: Always
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
@@ -72,7 +72,7 @@ spec:
         app: hooya-web-proxy-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-4
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-5
           # imagePullPolicy: Always
           name: hooya-web-proxy-public-demo
           command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
@@ -118,7 +118,7 @@ spec:
         app: hooya-web-ui-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0-alpha-4
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0-alpha-5
           # imagePullPolicy: Always
           name: hooya-web-ui-public-demo
           env:
