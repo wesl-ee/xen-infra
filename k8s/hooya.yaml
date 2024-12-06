@@ -49,3 +49,138 @@ spec:
     port: 8531
     targetPort: 8531
     protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-proxy
+  labels:
+    app: hooya-web-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-proxy
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-5
+          name: hooya-web-proxy
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
+          resources:
+            requests:
+              memory: "128Mi"
+      restartPolicy: Always
+---
+# hooya-web-proxy
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-proxy
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.128
+spec:
+  selector:
+    app: hooya-web-proxy
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8532
+    protocol: TCP
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-proxy
+  labels:
+    app: hooya-web-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-proxy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-proxy
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0-alpha-5
+          name: hooya-web-proxy
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
+          resources:
+            requests:
+              memory: "128Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-proxy
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.128
+spec:
+  selector:
+    app: hooya-web-proxy
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8532
+    protocol: TCP
+---
+# hooya-web-ui
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hooya-web-ui
+  labels:
+    app: hooya-web-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hooya-web-ui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: hooya-web-ui
+    spec:
+      containers:
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0-alpha-5
+          # imagePullPolicy: Always
+          name: hooya-web-ui
+          env:
+          - name: HOOYA_WEB_PROXY_URL
+            value: http://10.0.40.128
+          - name: HOOYA_WEB_PROXY_ENDPOINT
+            value: http://10.0.40.128
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooya-web-ui
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.136
+spec:
+  selector:
+    app: hooya-web-ui
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+  - name: http
+    port: 80
+    targetPort: 3000
+    protocol: TCP
