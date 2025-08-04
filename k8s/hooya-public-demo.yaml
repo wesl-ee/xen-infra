@@ -18,7 +18,7 @@ spec:
         app: hooyad-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0
+        - image: ghcr.io/hooya-network/hooyad:v0.1.2
           name: hooyad-public-demo
           # imagePullPolicy: Always
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
@@ -72,13 +72,22 @@ spec:
         app: hooya-web-proxy-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0
-          # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.2
           name: hooya-web-proxy-public-demo
-          command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
+          # command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531"]
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531", "--proxy-endpoint=0.0.0.0:8532", "--cors-origins=https://public-demo.hooya.wesl.ee", "--data-dir=/mnt"]
+          # command: ["/hooya-web-proxy", "--endpoint=10.0.40.133:8531", "--proxy-endpoint=0.0.0.0:8532", "--data-dir=/mnt"]
           resources:
             requests:
               memory: "128Mi"
+          volumeMounts:
+            - mountPath: /mnt
+              name: hooyad-public-demo-mnt
+              readOnly: false
+      volumes:
+        - name: hooyad-public-demo-mnt
+          persistentVolumeClaim:
+            claimName: hooyad-public-demo-mnt
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -118,8 +127,8 @@ spec:
         app: hooya-web-ui-public-demo
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0
-          # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.2
+        # imagePullPolicy: Always
           name: hooya-web-ui-public-demo
           env:
           - name: HOOYA_WEB_PROXY_URL
@@ -144,3 +153,24 @@ spec:
     port: 80
     targetPort: 3000
     protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooyad-public-demo-nodeport
+spec:
+  selector:
+    app: hooyad-public-demo
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - name: tcp-hooyad-public-demo
+      port: 8630
+      targetPort: 8630
+      protocol: TCP
+      nodePort: 30630
+    - name: udp-hooyad-public-demo
+      port: 8630
+      targetPort: 8630
+      protocol: UDP
+      nodePort: 30630

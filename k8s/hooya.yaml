@@ -17,7 +17,8 @@ spec:
         app: hooyad
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.0
+        - image: ghcr.io/hooya-network/hooyad:v0.1.2
+        # imagePullPolicy: Always
           name: hooyad
           command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
           resources:
@@ -50,50 +51,7 @@ spec:
     targetPort: 8531
     protocol: TCP
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: hooya-web-proxy
-  labels:
-    app: hooya-web-proxy
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: hooya-web-proxy
-  strategy:
-    type: Recreate
-  template:
-    metadata:
-      labels:
-        app: hooya-web-proxy
-    spec:
-      containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0
-          name: hooya-web-proxy
-          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
-          resources:
-            requests:
-              memory: "128Mi"
-      restartPolicy: Always
----
 # hooya-web-proxy
-apiVersion: v1
-kind: Service
-metadata:
-  name: hooya-web-proxy
-  annotations:
-    metallb.universe.tf/loadBalancerIPs: 10.0.40.128
-spec:
-  selector:
-    app: hooya-web-proxy
-  type: LoadBalancer
-  externalTrafficPolicy: "Local"
-  ports:
-  - name: http
-    port: 80
-    targetPort: 8532
-    protocol: TCP
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -113,12 +71,21 @@ spec:
         app: hooya-web-proxy
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.0
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.2
+        # imagePullPolicy: Always
           name: hooya-web-proxy
-          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531"]
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531", "--proxy-endpoint=0.0.0.0:8532", "--cors-origins=http://10.0.40.136", "--data-dir=/mnt"]
           resources:
             requests:
               memory: "128Mi"
+          volumeMounts:
+            - mountPath: /mnt
+              name: hooyad-mnt
+              readOnly: false
+      volumes:
+        - name: hooyad-mnt
+          persistentVolumeClaim:
+            claimName: hooyad-mnt
       restartPolicy: Always
 ---
 apiVersion: v1
@@ -158,13 +125,11 @@ spec:
         app: hooya-web-ui
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.0
-          # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.2
+        # imagePullPolicy: Always
           name: hooya-web-ui
           env:
           - name: HOOYA_WEB_PROXY_URL
-            value: http://10.0.40.128
-          - name: HOOYA_WEB_PROXY_ENDPOINT
             value: http://10.0.40.128
       restartPolicy: Always
 ---
@@ -184,3 +149,24 @@ spec:
     port: 80
     targetPort: 3000
     protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hooyad-nodeport
+spec:
+  selector:
+    app: hooyad
+  type: NodePort
+  externalTrafficPolicy: Local
+  ports:
+    - name: tcp-hooyad
+      port: 8530
+      targetPort: 8530
+      protocol: TCP
+      nodePort: 30530
+    - name: udp-hooyad
+      port: 8530
+      targetPort: 8530
+      protocol: UDP
+      nodePort: 30530
