@@ -17,10 +17,11 @@ spec:
         app: hooyad
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooyad:v0.1.2
-        # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooyad:v0.1.6
+          imagePullPolicy: Always
           name: hooyad
-          command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
+          # command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt", "--db-uri=sqlite:///mnt/hooya.sqlite"]
+          command: ["/hooyad", "--endpoint=0.0.0.0:8531", "--filestore=/mnt"]
           resources:
             requests:
               memory: "2Gi"
@@ -71,10 +72,11 @@ spec:
         app: hooya-web-proxy
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.2
-        # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooya-web-proxy:v0.1.5
+          imagePullPolicy: Always
           name: hooya-web-proxy
-          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531", "--proxy-endpoint=0.0.0.0:8532", "--cors-origins=http://10.0.40.136", "--data-dir=/mnt"]
+          # command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531", "--proxy-endpoint=0.0.0.0:8532", "--cors-origins=http://10.0.40.136", "--data-dir=/mnt"]
+          command: ["/hooya-web-proxy", "--endpoint=10.0.40.129:8531", "--proxy-endpoint=0.0.0.0:8532", "--cors-origins=https://hooya.wesl.ee", "--data-dir=/mnt"]
           resources:
             requests:
               memory: "128Mi"
@@ -125,12 +127,14 @@ spec:
         app: hooya-web-ui
     spec:
       containers:
-        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.2
-        # imagePullPolicy: Always
+        - image: ghcr.io/hooya-network/hooya-web-ui:v0.1.5
+          imagePullPolicy: Always
           name: hooya-web-ui
           env:
           - name: HOOYA_WEB_PROXY_URL
-            value: http://10.0.40.128
+            value: https://web.hooya.wesl.ee
+          - name: HOOYA_WEB_PROXY_ENDPOINT
+            value: http://10.0.40.136
       restartPolicy: Always
 ---
 apiVersion: v1
