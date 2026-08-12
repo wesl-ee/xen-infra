@@ -1,0 +1,201 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newtonian-store
+  labels:
+    app: newtonian-store
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: newtonian-store
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: newtonian-store
+    spec:
+      containers:
+        - image: ghcr.io/wesl-ee/newtonian-cloud:latest
+          imagePullPolicy: Always
+          name: newtonian-store
+          env:
+            - name: LISTEN_ADDR
+              value: "0.0.0.0:8088"
+            - name: STORAGE_ROOT
+              value: /data/store
+            - name: KEYCLOAK_URL
+              value: "https://auth.wesl.ee"
+            - name: KEYCLOAK_REALM
+              value: newtonian
+            - name: KEYCLOAK_CLIENT_ID
+              value: newtonian-store
+            - name: KEYCLOAK_REDIRECT_URL
+              value: "https://verifyd.cloud/auth/sso/callback"
+            - name: CORS_ALLOWED_ORIGINS
+              value: "http://10.0.40.138"
+            - name: DIFF_MAX_SKEW_SECS
+              value: "60"
+            - name: DIFF_ATTESTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: diff-attester-key
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: database-url
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: jwt-secret
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: keycloak-client-secret
+                  optional: true
+          resources:
+            requests:
+              memory: "256Mi"
+          volumeMounts:
+            - mountPath: /data/store
+              name: newtonian-store-data
+              readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: newtonian-store-data
+          persistentVolumeClaim:
+            claimName: newtonian-store-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: newtonian-store-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: newtonian-store
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.137
+spec:
+  selector:
+    app: newtonian-store
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+    - name: http
+      port: 8088
+      targetPort: 8088
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newtonian-web-ui
+  labels:
+    app: newtonian-web-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: newtonian-web-ui
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: newtonian-web-ui
+    spec:
+      containers:
+        - image: ghcr.io/wesl-ee/newtonian-cloud-web-ui:latest
+          imagePullPolicy: Always
+          name: newtonian-web-ui
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://10.0.40.137:8088"
+          resources:
+            requests:
+              memory: "128Mi"
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: newtonian-web-ui
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: 10.0.40.138
+spec:
+  selector:
+    app: newtonian-web-ui
+  type: LoadBalancer
+  externalTrafficPolicy: "Local"
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+      protocol: TCP
+---
+# base sepolia job
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newtonian-commit
+  labels:
+    app: newtonian-commit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: newtonian-commit
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: newtonian-commit
+    spec:
+      containers:
+        - image: ghcr.io/wesl-ee/newtonian-commit:latest
+          imagePullPolicy: Always
+          name: newtonian-commit
+          # 84532 is base sepolia
+          args: ["--config", "/config/84532-stagef.json"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: database-url
+            - name: NEWTON_GATEWAY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: gateway-api-key
+            - name: COMMIT_WALLET_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: newtonian-secrets
+                  key: commit-wallet-private-key
+          resources:
+            requests:
+              memory: "128Mi"
+          volumeMounts:
+            - mountPath: /config
+              name: commit-config
+              readOnly: true
+      restartPolicy: Always
+      volumes:
+        - name: commit-config
+          secret:
+            secretName: newtonian-commit-config
