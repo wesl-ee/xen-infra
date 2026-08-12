@@ -34,12 +34,12 @@ spec:
             - name: KC_DB_URL
               value: "jdbc:postgresql://10.0.10.3:5432/keycloak"
             - name: KC_DB_USERNAME
-              value: postgres
+              value: keycloak
             - name: KC_DB_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: newtonian-secrets
-                  key: postgres-password
+                  key: keycloak-db-password
             - name: KC_HOSTNAME
               value: "https://auth.wesl.ee"
             - name: KC_HTTP_ENABLED
